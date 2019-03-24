@@ -1,0 +1,117 @@
+<html>
+<head>
+<style>
+html { background: url(http://localhost:9090/bg.jpg) no-repeat center center fixed; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover; }
+.test{
+    height:40px;
+    width:80px;
+}
+
+.test2{
+    height:30px;
+    width:80px;
+}
+
+.test3{
+    height:40px;
+    width:80px;
+    font-size: large;
+    color: #424bf4;
+}
+
+</style>
+
+</head>
+<body>
+
+  <p><h2 style="color: #ffffff;">Welcome to chat group.</h2></p> <br/>
+
+<table>
+<tr>
+<td>
+<textarea id="chatBox" rows="35" cols="100">
+
+</textarea>
+</td>
+</tr>
+<tr>
+<td>
+<table>
+<tr>
+<td>
+<textarea id="sendMSG" rows="4" cols="75">
+
+</textarea>
+</td>
+<td align="center">
+<input type="button" class="test3" value="Send" onclick="sendMessage()">
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<input type="button" class="test2" value="Logout" onclick="javascript:logout();"></td>
+</tr>
+</table>
+
+<script type="text/javascript">
+  function eraseText() {
+    document.getElementById("sendMSG").value = "";
+  }
+</script>
+<script type="text/javascript">
+  var ws = new WebSocket("ws://localhost:9095/basic/ws");
+  if ("WebSocket" in window) {          
+    ws.onopen = function(evt) {
+      var received_msg = evt.data;
+      document.getElementById("chatBox").innerHTML = received_msg;
+    };
+				
+    ws.onmessage = function (evt) { 
+      var received_msg = evt.data;
+      document.getElementById("chatBox").innerHTML = received_msg;
+    };
+				
+    ws.onclose = function() {
+      document.getElementById("chatBox").innerHTML = "Connection is closed..."; 
+    };
+  } else {
+    alert("WebSocket NOT supported by your Browser!");
+  }
+
+function sendMessage() {
+  var msg = document.getElementById("sendMSG").value
+  if (msg != "") {
+  	var d = new Date();
+  	var n = d.toLocaleString();
+	ws.send("uname (" + n + "): " + msg);
+        eraseText();
+  } else {
+    alert("Please type the message.");
+  }
+};
+</script>
+<script type="text/javascript">
+function logout() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+         var xhttp = new XMLHttpRequest();
+         xhttp.onreadystatechange = function() {
+         if (this.readyState == 4 && this.status == 200) {
+            window.location.replace(this.responseText);
+         }
+  };
+  xhttp.open("GET", "http://localhost:9090/direction?username=uname", true);
+  xhttp.send();
+    }
+  };
+
+  xhttp.open("GET", "http://localhost:9093?username=uname&logout=true", true);
+  xhttp.send();
+};
+</script>
+</body>
+</html>

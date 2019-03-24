@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="http://localhost:9090/jsencrypt.js"></script>
+<script type="text/javascript" src="http://localhost:9090/browser-aes.js"></script>
+<script>
+function encryptAES(plainText, kk, ii) {
+    var crypto = require('crypto');
+    var encrypt = new JSEncrypt();
+    keyBase64 = Buffer.from(kk).toString('base64');
+    ivBase64 = Buffer.from(ii).toString('base64');
+    var key = Buffer.from(keyBase64, 'base64');
+    var iv = Buffer.from(ivBase64, 'base64');
+
+    var cipher = crypto.createCipheriv(getAlgorithm(kk), key, iv);
+    cipher.update(plainText, 'utf8', 'base64')
+    return cipher.final('base64');
+}
+</script>
+
+<script>
+function decryptRSA(encrypted) {
+   var decrypt = new JSEncrypt();
+   decrypt.setPrivateKey(document.getElementById('privkey').value);
+   var uncrypted = decrypt.decrypt(encrypted);
+
+   return uncrypted;
+}
+</script>
+
+<script>
+function send(encryptedval) {
+  var xhttp = new XMLHttpRequest();
+  var urlEncodedDataPairs = [];
+  var params = "username=" + document.getElementById('username').value + "&encryptedval=" + encryptedval; 
+
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      uncrypted = decryptRSA(this.responseText);
+    }
+  };
+  xhttp.open("POST", "http://localhost:9093", true);
+  xhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhttp.send(params);
+};
+</script>
+<script>
+    function sleep( millisecondsToWait )
+    {
+
+    var now = new Date().getTime();
+
+    while ( new Date().getTime() < now + millisecondsToWait )
+
+    {
+
+    }
+
+    }
+</script>
+<script type="text/javascript">
+function load() {
+  var uname = "";
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      unencrypted = decryptRSA(this.responseText);
+
+      if (!(typeof unencrypted === "boolean")) {
+      var key = unencrypted;
+      var iv = "RandomInitVector";
+
+      var cipherText = encrypt("ack", key, iv);
+      send(cipherText);
+
+      sleep(1000);
+
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      window.location.replace(this.responseText);
+    }
+  };
+  xhttp.open("GET", "http://localhost:9090/direction?username=" + document.getElementById('username').value, true);
+  xhttp.send();
+    }
+
+    }
+  };
+
+  xhttp.open("GET", "http://localhost:9093?username=" + document.getElementById('username').value, true);
+  xhttp.send();
+
+};
+</script>
+
+<script>
+function startRead() {
+  var file = document.getElementById('file-input').files[0];
+  
+  if(file){
+    out = getAsText(file);
+  }
+}
+
+function getAsText(readFile) {
+  var reader = new FileReader();
+  reader.readAsText(readFile, "UTF-8");
+
+  reader.onprogress = updateProgress;
+  reader.onload = loaded;
+  reader.onerror = errorHandler;
+}
+
+function updateProgress(evt) {
+
+}
+
+function loaded(evt) {
+  var fileString = evt.target.result;
+
+  document.getElementById('privkey').value = fileString;
+}
+
+function errorHandler(evt) {
+  if(evt.target.error.name == "NotReadableError") {
+    // The file could not be read
+  }
+}
+</script>
+
+</head>
+<body>
+
+<h2>User Login</h2>
+<body>
+<table>
+<tr>
+<td>
+  <label for="privkey">User Name:</label><br/>
+<input type="text" id="privkey" name="privkey" style="display:none">
+</td>
+<td>
+  <input type="text" id="username" name="username">
+</td>
+</tr>
+<tr>
+<td height="10"></td>
+</tr>
+<tr>
+<td>
+  <label for="privkey">Private Key:</label>
+</td>
+<td>
+<input id="file-input" type="file" name="name" onchange="startRead()"/>
+</td>
+</tr>
+<tr>
+<td height="10"></td>
+</tr>
+<tr>
+<td>
+<input type="button" value="Submit" onclick="load()">
+</td>
+</tr>
+</table>
+<p id="demo"></p>
+</body>
+</html>
