@@ -31,7 +31,7 @@ service uiService on uiEP {
         path:"/"
     }
    resource function sayHello(http:Caller caller, http:Request req, string name, string message) {
-        io:ReadableByteChannel readableByteChannel = io:openReadableFile("web/login6.html");
+        io:ReadableByteChannel readableByteChannel = io:openReadableFile("web/login.html");
         var readableCharChannel = new io:ReadableCharacterChannel(readableByteChannel, "UTF-8");
         var readableRecordsChannel = new io:ReadableTextRecordChannel(readableCharChannel);
 
@@ -80,12 +80,12 @@ service uiService on uiEP {
 
    @http:ResourceConfig {
         methods:["GET"],
-        path:"/browser-aes2.js"
+        path:"/browser-aes.js"
     }
    resource function sendJSBrowser(http:Caller caller, http:Request req, string name, string message) {
        http:Response res = new;
 
-       res.setFileAsPayload("web/browser-aes2.js", contentType = "text/javascript");
+       res.setFileAsPayload("web/browser-aes.js", contentType = "text/javascript");
        res.setContentType("text/javascript; charset=utf-8");
 
        var result = caller->respond(res);
@@ -313,7 +313,7 @@ public function setResponseError(json jsonResponse) returns error {
 
     if (!errorFlag) {
         string hashKey = untaint finalResult;
-        io:ReadableCharacterChannel sourceChannel = new (io:openReadableFile("/home/miyurud/Projects/Blockchain/key-db/" + hashKey), "UTF-8");
+        io:ReadableCharacterChannel sourceChannel = new (io:openReadableFile("key-db/" + untaint uname + "/" + hashKey), "UTF-8");
         var readableRecordsChannel = new io:ReadableTextRecordChannel(sourceChannel, fs = ",", rs = "\n");
         while (readableRecordsChannel.hasNext()) {
             var result = readableRecordsChannel.getNext();
